@@ -27,7 +27,7 @@ spring:
 
   h2:
     console.enabled: true
-    console.path: /h2-console #접속 URL -> jdbc:h2:mem:testdb, ID:sa, PW: (EMPTY)
+    console.path: /h2-console
     console.settings.trace: false
 
 ---
@@ -35,13 +35,4 @@ spring:
   profiles: real
   datasource:
     hikari:
-      jdbc-url: jdbc:mariadb:aurora://point.cluster-cvqgfwbdqpys.ap-northeast-2.rds.amazonaws.com:3306/point
-      username: point
-      password: dndkgkspoint00!
       driver-class-name: org.mariadb.jdbc.Driver
-      connectionTimeout: 10000
-      max-lifetime: 600000
-      maximumPoolSize: 200
-      data-source-properties:
-        connectTimeout: 10000
-        socketTimeout: 60000
