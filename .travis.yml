@@ -18,8 +18,9 @@ script: "./gradlew clean build"
 before_deploy:
   - mkdir -p archive
   - cp build/libs/*.jar archive/
-  - cp -r .ebextensions archive/.ebextensions
+  - cp -r ./.ebextensions archive/.ebextensions
   - cd archive
+  - ll
   - zip -r archive *
 
 deploy:
