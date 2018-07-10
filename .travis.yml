@@ -24,7 +24,7 @@ before_deploy:
 
 deploy:
   provider: elasticbeanstalk
-  zip_file: archive/archive.zip
+  zip_file: archive.zip
   skip_cleanup: true
   access_key_id: $AWS_ACCESS_KEY # declared in Travis repo settings
   secret_access_key:
