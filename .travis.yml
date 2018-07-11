@@ -22,6 +22,8 @@ before_deploy:
   - cd archive
   - ls -al
   - zip -r archive *
+  - cd .ebextensions
+  - ls -al
 
 deploy:
   provider: elasticbeanstalk
