@@ -20,7 +20,7 @@ before_deploy:
   - cp build/libs/*.jar archive/
   - cp -r ./.ebextensions archive/.ebextensions
   - cd archive
-  - ll -al
+  - ls -al
   - zip -r archive *
 
 deploy:
