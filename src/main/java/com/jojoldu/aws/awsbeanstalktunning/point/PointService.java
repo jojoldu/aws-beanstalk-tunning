@@ -22,4 +22,9 @@ public class PointService {
     public Long getAvailablePoint(Long userId){
         return pointRepository.getAvailablePoint(userId);
     }
+
+    @Transactional
+    public void savePoint(PointDto pointDto){
+        pointRepository.save(pointDto.toEntity());
+    }
 }

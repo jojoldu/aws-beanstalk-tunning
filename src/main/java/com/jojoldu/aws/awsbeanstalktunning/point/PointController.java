@@ -2,9 +2,7 @@ package com.jojoldu.aws.awsbeanstalktunning.point;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 /**
  * Created by jojoldu@gmail.com on 09/07/2018
@@ -22,5 +20,11 @@ public class PointController {
     @GetMapping("/availablePoint/{userId}")
     public Long getAvailablePoint(@PathVariable Long userId){
         return pointService.getAvailablePoint(userId);
+    }
+
+    @PostMapping("/point")
+    public boolean savePoint(@RequestBody PointDto pointDto){
+        pointService.savePoint(pointDto);
+        return true;
     }
 }
