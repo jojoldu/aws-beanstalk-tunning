@@ -125,6 +125,9 @@ notifications:
 ```
 
 yml의 내용 중 대부분은 쉽게 이해가 가실것 같습니다.  
+before_deploy 스크립트를 보면 ```cp -r ./.ebextensions archive/.ebextensions```로 ```.ebextensions```를 복사하는데요.  
+이건 아래 5번 과정에서 소개할 Beanstalk config 파일들을 배포 시점에 모두 같이 배포한다는 의미입니다.  
+
 여기서 ```deploy.app```과 ```deploy.env```는 Beanstalk의 값들입니다.
 
 ![eb1](./images/eb1.png)
@@ -159,7 +162,30 @@ Beanstalk의 경우 EC2처럼 일일이 설정이 필요하지 않습니다만, 
   
 현재 서버 시간은 UTC로 나옵니다.
 
-![eb3](./images/eb4.png)
+![eb4](./images/eb4.png)
+
+폴더에 ```.ebextensions``` 폴더를 만들고, 그 안에 ```01-timezone.config``` 파일을 생성합니다.
+
+![eb5](./images/eb5.png)
+
+```
+commands:
+  01remove_local:
+    command: "rm -rf /etc/localtime"
+  02link_seoul_zone:
+    command: "ln -s /usr/share/zoneinfo/Asia/Seoul /etc/localtime"
+```
+
+이렇게 추가후 다시 배포를 진행해보시면!
+
+![eb6](./images/eb6.png)
+
+별도의 서버 설정 없이 서버 타임존이 UTC -> KST로 변경된것을 알 수 있습니다.
+
+## 마무리
+
+Github에 push될때마다 Beanstalk이 자동 배포되고, 배포 될때 서버 환경을 ```.ebextensions``` 안의 config 파일을 통해서 자동 설정되는 환경이 구축되었습니다!  
+혹시나 개인 프로젝트를 빠르고 편하게 사용하실 분들이 계신다면 꼭 참고하시면 좋을것 같습니다
 
 
 
