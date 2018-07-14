@@ -22,7 +22,7 @@ before_deploy:
   - cp -r ./.ebextensions archive/.ebextensions
   - cd archive
   - ls -al
-  - zip -r archive.zip application.jar .ebextensions
+  - zip -r archive.zip application.jar .ebextensions Procfile
 
 deploy:
   provider: elasticbeanstalk
