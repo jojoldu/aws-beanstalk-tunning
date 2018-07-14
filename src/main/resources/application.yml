@@ -9,6 +9,11 @@ spring:
       hibernate.hbm2ddl.import_files_sql_extractor: org.hibernate.tool.hbm2ddl.MultipleLinesSqlCommandExtractor
       hibernate.default_batch_fetch_size: ${chunkSize:1000}
 
+server:
+  port: 8080
+
+logging.path: logs/aws-beanstalk-tunning/
+
 ---
 spring:
   profiles: local

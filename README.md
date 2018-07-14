@@ -32,6 +32,6 @@ Pinpoint와 nGrinder의 설치는 이미 되어있는 상태라 가정하고 진
 
 ## 소켓 재사용 활성화
 
-## Nginx와 SpringBoot keepalive 설정
+
 
 ## RDS -> Redis 전환
