@@ -187,6 +187,15 @@ RDS의 CPU에는 여유가 있지만, EC2의 CPU가 따라가지 못하고 있�
 
 ### 1-4. jstack으로 확인하기
 
+![jstack1](./images/1/jstack1.png)
+
+```bash
+sh jstackSeries.sh 4573 10 1
+```
+
+* sh jstackSeries.sh [pid] [count] [delay]
+
+* [Eclipse.org](http://wiki.eclipse.org/How_to_report_a_deadlock#jstackSeries_--_jstack_sampling_in_fixed_time_intervals_.28tested_on_Linux.29) 
 
 > Connection Pool에 대해 좀 더 자세하게 알고 싶으신 분들은 [Naver D2 - Commons DBCP 이해하기](https://d2.naver.com/helloworld/5102792) 을 참고해보세요!
 
