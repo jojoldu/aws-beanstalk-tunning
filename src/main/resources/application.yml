@@ -41,4 +41,6 @@ spring:
   profiles: real
   datasource:
     hikari:
+      minimum-idle: 50
+      maximumPoolSize: 200
       driver-class-name: org.mariadb.jdbc.Driver
