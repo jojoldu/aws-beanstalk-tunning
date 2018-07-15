@@ -48,16 +48,18 @@ Pinpoint와 nGrinder의 설치는 이미 되어있는 상태라 가정하고 진
 
 ## 1. TPS 800 -> 2000
 
+작은 수치부터 차례로 올려보겠습니다.  
+
 ### 1-1. Vuser 20
 
 5개의 nGrinder Agent 에서 각각 4명의 사용자를 만들어 부하 테스트를 진행합니다.  
 (즉 Vuser는 5 * 4 = 20입니다.)
 
-![ngrinder1](./images/1/ngrinder1-1.png)
+![ngrinder1-1](./images/1/ngrinder1-1.png)
 
 5분간 진행한 테스트 결과를 보면!
 
-![ngrinder2](./images/1/ngrinder1-2.png)
+![ngrinder1-2](./images/1/ngrinder1-2.png)
 
 * 평균 TPS (초당 처리수): 800
 * Peak TPS : 1275
@@ -105,7 +107,7 @@ Pinpoint 그래프를 보면 더더욱 이상한 모양이 나옵니다.
   
 응답이 느릴때는 항상 ```getConnection()```에서 오래 걸린다는 것이 발견되었습니다!  
 
-### Datasource Connection Pool 설정
+### 1-3. Datasource Connection Pool 설정하기
 
 지금 문제를 보시면 **Database와 Connection을 생성하는 과정에서 병목이 발생**하는 것을 알 수 있습니다.  
 Database를 사용할 때마다 Connection을 생성하고 삭제하는 과정이 필요하다보니 병목이 발생하는데요.  
@@ -128,39 +130,68 @@ spring:
   profiles: real
   datasource:
     hikari:
-      maximum-pool-size: 200
+      maximum-pool-size: 50
       driver-class-name: org.mariadb.jdbc.Driver
 ```
 
-> 주의하실점은 서버가 1대가 아닌 여러대일 경우 **서버들의 maximum-pool-size의 합이 RDS의 max connection 수를 초과**하면 안됩니다.  
- 
+> 주의하실 점은 톰캣 서버가 1대가 아닌 여러대일 경우 **서버들의 maximum-pool-size의 합이 RDS의 max connection 수를 초과**하면 안됩니다.  
+
+아마 Connection Pool 설정을 한다고 하면 아래 2가지 옵션을 생각하실텐데요.  
+  
+
 **minimum-idle**
 
 ![minidle](./images/1/minidle.png)
 
 minimum-idle의 설명을 보면 Connection Pool의 최소 유지수 라고 합니다.  
 즉, 사용하지 않을때도 최소한 이정도의 Connection은 유지한다는 뜻입니다.  
-**이 값은 사용하지 않습니다**.  
-
-> **HikariCP에서는 maximum-pool-size만 설정되어 있다면 minimum-idle와 maximum-pool-size값을 일치**시킵니다.
+HikariCP에서는 이 값을 설정하지 않을 경우 **maximum-pool-size와 일치**시킵니다.  
+그래서 별다른 설정을 하지 않겠습니다.
 
 **maximum-pool-size**
 
 ![maxpool](./images/1/maxpool.png)
 
-maximumPoolSize 설명을 보면 아주 좋은 힌트가 있습니다.  
+maximum-pool-size 설명을 보면 아주 좋은 힌트가 있습니다.  
 사용하는 Connection의 숫자가 maximum Pool Size에 도달하면 ```getConnection()```을 호출하고, 이때는 최대 connectionTimeout만큼 block 될 수 있다고 합니다.  
 딱 저희의 상황과 같죠?  
 
-> 기존에 max-active, max-idle의 값은 모두 maximum-pool-size에 포함되어 있습니다.  
+> 기존 다른 DBCP (Commons DBCP)에서 설정하던 max-active, max-idle의 값은 모두 maximum-pool-size에 포함되어 있습니다.  
 (including both idle and in-use connections)
+
+이렇게 설정후 배포를 해보시면 RDS의 커넥션 수가 10 -> 50으로 변경된 것을 확인할 수 있습니다.
+
+![rds1](./images/1/rds1.png)
+
+자 그럼 다시 한번 테스트를 해보겠습니다.  
+Pinpoint에 더이상 주기적으로 튀는 것은 없어졌지만!  
+**테스트 초반에 응답 속도가 확 튀는 것**이 보입니다.
+
+![pinpoint2-4](./images/1/pinpoint2-4.png)
+
+RDS의 CPU는 25% 까지만 올라갔기 때문에 아직 여유가 있습니다.
+
+![rds-cpu1](./images/1/rds-cpu1.png)
+
+하지만! Beanstalk의 **EC2 CPU를 보면 100%**까지 올라갔습니다!
+
+![ec2-cpu1](./images/1/ec2-cpu1.png)
+
+더 중요한건 **TPS가 증가하지 않았습니다!**
+
+![ngrinder2-2](./images/1/ngrinder2-2.png)
+
+또 뭔가 문제가 있어보입니다.  
+RDS의 CPU에는 여유가 있지만, EC2의 CPU가 따라가지 못하고 있습니다.  
+자 그러면 왜 EC2 의 CPU가 못따라가는지 쓰레드 덤프를 통해서 확인해보겠습니다.
+
+### 1-4. jstack으로 확인하기
+
 
 > Connection Pool에 대해 좀 더 자세하게 알고 싶으신 분들은 [Naver D2 - Commons DBCP 이해하기](https://d2.naver.com/helloworld/5102792) 을 참고해보세요!
 
 ## keepalive 개선
 
 ## 소켓 재사용 활성화
-
-
 
 ## RDS -> Redis 전환
