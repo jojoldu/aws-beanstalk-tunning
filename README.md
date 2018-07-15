@@ -50,7 +50,8 @@ Pinpoint와 nGrinder의 설치는 이미 되어있는 상태라 가정하고 진
 
 ### 1-1. Vuser 20
 
-5개의 nGrinder Agent 에서 각각 4명의 사용자를 만들어 부하 테스트를 진행합니다.
+5개의 nGrinder Agent 에서 각각 4명의 사용자를 만들어 부하 테스트를 진행합니다.  
+(즉 Vuser는 5 * 4 = 20입니다.)
 
 ![ngrinder1](./images/1/ngrinder1-1.png)
 
@@ -71,7 +72,7 @@ Pinpoint에서 응답 상황을 봐도
 
 100ms (0.1초) 이내로 결과를 반환하는 것을 확인할 수 있습니다.  
   
-자 TPS 800은 무난하게 처리가 됩니다.  
+TPS 800은 무난하게 처리가 됩니다.  
 좀 더 높은 수치로 테스트 해보겠습니다.
 
 > 동시접속자와 TPS는 전혀 다른 의미입니다.  
@@ -115,8 +116,7 @@ Database를 사용할 때마다 Connection을 생성하고 삭제하는 과정�
 미리 일정량의 Connection 을 생성하고, 요청이 오면 해당 Connection을 재사용하는 방식을 얘기합니다.  
   
 스프링 부트에서는 아주 쉽게 설정이 가능하기 때문에 바로 설정해보겠습니다.  
-현재 사용하는 DBCP는 [HikaciCP](https://github.com/brettwooldridge/HikariCP) 입니다.  
-이에 맞춰 설정합니다.  
+현재 사용하는 DBCP인 [HikaciCP](https://github.com/brettwooldridge/HikariCP) 에 맞춰 설정합니다.  
   
 **application.yml**
 
@@ -129,13 +129,28 @@ spring:
   datasource:
     hikari:
       minimum-idle: 50
-      maximumPoolSize: 200
+      maximum-pool-size: 200
       driver-class-name: org.mariadb.jdbc.Driver
 ```
 
+> 주의하실점은 서버가 1대가 아닌 여러대일 경우 **서버들의 maximum-pool-size의 합이 RDS의 max connection 수를 초과**하면 안됩니다.  
+ 
+**minimum-idle**
 
+![minidle](./images/1/minidle.png)
 
-> Connection Pool에 대해 좀 더 자세하게 알고 싶으신 분들은 [Naver D2 - Commons DBCP 이해하기](https://d2.naver.com/helloworld/5102792) 을 참고해보세
+minimum-idle의 설명을 보면 Connection Pool의 최소 유지수 라고 합니다.  
+즉, 사용하지 않을때도 최소한 이정도의 Connection은 유지합니다.  
+  
+**maximumPoolSize**
+
+![maxpool](./images/1/maxpool.png)
+
+maximumPoolSize 설명을 보면 아주 좋은 힌트가 있습니다.  
+사용하는 Connection의 숫자가 maximum Pool Size에 도달하면 ```getConnection()```을 호출하고, 이때는 최대 connectionTimeout만큼 block 될 수 있다고 합니다.  
+딱 저희의 상황과 같죠?  
+
+> Connection Pool에 대해 좀 더 자세하게 알고 싶으신 분들은 [Naver D2 - Commons DBCP 이해하기](https://d2.naver.com/helloworld/5102792) 을 참고해보세요!
 
 ## keepalive 개선
 

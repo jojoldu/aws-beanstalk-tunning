@@ -19,7 +19,6 @@ public class PointController {
 
     @GetMapping("/availablePoint/{userId}")
     public Long getAvailablePoint(@PathVariable Long userId){
-        log.info("[포인트][조회] userId={}", userId);
         return pointService.getAvailablePoint(userId);
     }
 
