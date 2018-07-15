@@ -128,7 +128,6 @@ spring:
   profiles: real
   datasource:
     hikari:
-      minimum-idle: 50
       maximum-pool-size: 200
       driver-class-name: org.mariadb.jdbc.Driver
 ```
@@ -140,15 +139,21 @@ spring:
 ![minidle](./images/1/minidle.png)
 
 minimum-idle의 설명을 보면 Connection Pool의 최소 유지수 라고 합니다.  
-즉, 사용하지 않을때도 최소한 이정도의 Connection은 유지합니다.  
-  
-**maximumPoolSize**
+즉, 사용하지 않을때도 최소한 이정도의 Connection은 유지한다는 뜻입니다.  
+**이 값은 사용하지 않습니다**.  
+
+> **HikariCP에서는 maximum-pool-size만 설정되어 있다면 minimum-idle와 maximum-pool-size값을 일치**시킵니다.
+
+**maximum-pool-size**
 
 ![maxpool](./images/1/maxpool.png)
 
 maximumPoolSize 설명을 보면 아주 좋은 힌트가 있습니다.  
 사용하는 Connection의 숫자가 maximum Pool Size에 도달하면 ```getConnection()```을 호출하고, 이때는 최대 connectionTimeout만큼 block 될 수 있다고 합니다.  
 딱 저희의 상황과 같죠?  
+
+> 기존에 max-active, max-idle의 값은 모두 maximum-pool-size에 포함되어 있습니다.  
+(including both idle and in-use connections)
 
 > Connection Pool에 대해 좀 더 자세하게 알고 싶으신 분들은 [Naver D2 - Commons DBCP 이해하기](https://d2.naver.com/helloworld/5102792) 을 참고해보세요!
 
