@@ -4,7 +4,7 @@
 모든 코드는 [Github](https://github.com/jojoldu/aws-beanstalk-tunning)에 있으니 참고하시면 됩니다.  
   
 신규 서비스를 출시할때마다 성능 테스트와 튜닝을 꼭 진행해야합니다.  
-이번에 신규 프로젝트를 준비하면서 이것저것 시도해본 내용을 샘플 예제로 정리합니다.  
+이번에 신규 프로젝트를 준비하면서 이것 저것 시도해본 내용을 샘플 예제로 정리합니다.  
 
 ## 0. 테스트 환경
 
@@ -42,10 +42,9 @@
 이건 완전히 기본 세팅입니다.  
 혹시나 안하신 분이 계시면 꼭 하세요
 
-Pinpoint와 nGrinder의 설치는 이미 되어있는 상태라 가정하고 진행합니다.  
-
-> 성능 개선에 좀 더 초점을 맞춰서 진행하겠습니다.
-
+**Pinpoint와 nGrinder의 설치는 이미 되어 있는 상태**라 가정하고 진행합니다.  
+혹시나 처음 들어보셔도 블로그 내용을 이해하시는데 큰 어려움은 없으실것 같습니다.  
+  
 자 그럼 이제 성능 테스트를 시작해보겠습니다.
 
 > 참고로 여기서 사용하는 테스트가 기준이 될 순 없습니다.  
@@ -55,7 +54,7 @@ Pinpoint와 nGrinder의 설치는 이미 되어있는 상태라 가정하고 진
 쌓여 있는 대량의 데이터, 복잡한 쿼리, 외부 API 연동 등으로 인해 병목 요소가 굉장히 많습니다.
 
 
-## 1. Connection Pool
+## 1. TPS 800 -> 1000
 
 작은 수치부터 차례로 올려보겠습니다.  
 
@@ -85,9 +84,6 @@ Pinpoint에서 응답 상황을 봐도
   
 TPS 800은 무난하게 처리가 됩니다.  
 좀 더 높은 수치로 테스트 해보겠습니다.
-
-> 동시접속자와 TPS는 전혀 다른 의미입니다.  
-가끔 동접 1만을 TPS 1만처럼 이야기하시는 분들이 계시는데 전혀 다른 수치입니다.  
 
 ### 1-2. Vuser 50
 
@@ -196,42 +192,62 @@ HikariCP에서는 이 값을 설정하지 않을 경우 **maximum-pool-size와 �
   
 
 자 그럼 다시 한번 테스트를 해보겠습니다.  
-바로 Vuser 50으로 하지 않고 30으로 해서 순차적으로 진행해보겠습니다.
+바로 Vuser 50으로 하지 않고 **Vuser 30**으로 해서 순차적으로 진행해보겠습니다.
 
 ![ngrinder2-2](./images/1/ngrinder2-2.png)
 
-Vuser가 20일때와 비교해서 1.5배 (30)으로 늘어났지만, **평균 TPS가 전혀 오르지 않았습니다**.  
+Vuser가 20일때와 비교해서 1.5배 (30)으로 늘어났지만, **평균 TPS는 생각보다 많이 오르지 않았습니다**.  
 
 다행히! Pinpoint를 보면 이전처럼 더이상 **주기적으로 튀는 현상이 사라졌습니다**!
 
 ![pinpoint2-4](./images/1/pinpoint2-4.png)
 
-자 그럼 여기서 한가지 의문입니다.  
-TPS가 왜 계속 800대인지 궁금합니다.  
+자 그럼 여기서 **TPS가 왜 크게 오르지 않았는지**가 궁금합니다.  
 하드웨어 사양의 한계인지 한번 확인해보겠습니다.  
 **RDS의 CPU는 25%** 까지만 올라갔기 때문에 아직 여유가 있습니다.
 
 ![rds-cpu1](./images/1/rds-cpu1.png)
 
-Beanstalk의 **EC2 CPU는 50%** 까지 올라갔습니다
+Beanstalk의 **EC2 CPU는 95%** 까지 올라갔습니다!
 
 ![ec2-cpu1](./images/1/ec2-cpu1.png)
 
-RDS도 EC2도 자원이 아직 여유롭습니다.  
-이렇게 자원이 남을때는, 서버의 자원을 좀 더 사용할 수 있도록 Tomcat Thread 수를 조정하겠습니다
+RDS의 자원은 여유로우나, **EC2의 CPU가 한계**에 왔기 때문에 EC2의 사양을 한단계 더 올려보겠습니다.  
 
-### 1-4. Tomcat Thread 
+### 1-4. EC2 c5.xlarge로 다시 테스트
 
-일반적으로 Tomcat Max Thread를 DBCP의 Max Connection 보다 조금 더 높게 설정합니다.  
-**Tomcat으로 오는 모든 요청이 꼭 DB를 사용하지 않기 때문**인데요.  
-예를 들어 여기 테스트만 하더라도 Beanstalk이 EC2가 살아있는지 체크하는 Health Check Request는 DB를 사용하지 않습니다.  
-무난하게 DB Max Connection 보다 10 증가한 60으로 Tomcat Max Threads를 설정합니다.
+EC2의 사양을 한단계 더 올린 c5.xlarge로 다시 테스트 해보겠습니다.  
 
+똑같이 Vuser 30으로 두고 실행해보면!
 
+![ngrinder3](./images/1/ngrinder3.png)
 
+엄청난 양의 에러가 발생하면서 테스트가 도중에 실패했습니다!  
+Pinpoint를 한번 확인해보면!
 
+![pinpoint3](./images/1/pinpoint3.png)
 
-또 뭔가 문제가 있어보입니다.  
-RDS의 CPU에는 여유가 있지만, EC2의 CPU가 따라가지 못하고 있습니다.  
-자 그러면 왜 EC2 의 CPU가 못따라가는지 쓰레드 덤프를 통해서 확인해보겠습니다.
+Pinpoint에서는 **Spring Boot로 요청 자체가 오지 않았음**을 알 수 있습니다.
+(실패는 없고, 요청건수가 0건입니다.)  
+  
+실제로 그런것인지 Beanstalk 서버로 접속해서 로그를 확인해보면!
+
+![log1](./images/1/log1.png)
+
+Spring Boot에서 발생한 App Error log는 전혀 없는 반면, Nginx에서 대량의 Error log가 발생한 것을 확인할 수 있습니다!  
+  
+그럼 왜 Spring Boot로 요청 자체가 오지 않았는지!  
+오류 추적과 해결을 다음 시간에 이어서 진행하겠습니다 :)
+
+## 부제) Tomcat Thread는? 
+
+여기서 Tomcat Thread는 조정하지 않아도 되나? 라고 생각하실텐데요.  
+SpringBoot의 ```server.tomcat.max-threads```는 **기본값이 0**입니다.  
+이건 실제 max thread 수를 0으로 하는게 아닌, **Tomcat의 기본값을 쓰겠다**는 의미이며, 이 경우 실제 max thread는 **Tomcat의 기본값인 200**이 됩니다.  
+
+![tomcat-threads](./images/1/tomcat-threads.png)
+
+([Tomcat 8.5 Config](https://tomcat.apache.org/tomcat-8.5-doc/config/http.html))  
+  
+현재 테스트 역시 별다른 값이 지정 안되어있으니 **max thread는 200**이라고 보시면 됩니다.
 
