@@ -54,7 +54,7 @@ Pinpoint와 nGrinder의 설치는 이미 되어있는 상태라 가정하고 진
 쌓여 있는 대량의 데이터, 복잡한 쿼리, 외부 API 연동 등으로 인해 병목 요소가 굉장히 많습니다.
 
 
-## 1. Datasource Connection Pool
+## 1. Connection Pool
 
 작은 수치부터 차례로 올려보겠습니다.  
 
@@ -90,7 +90,7 @@ TPS 800은 무난하게 처리가 됩니다.
 
 ### 1-2. Vuser 50
 
-자 그럼 이제 Vuser 50으로 설정 후 다시 부하 테스트를 해보겠습니다.  
+자 그럼 이번에는 화끈하게 Vuser 50으로 설정 후 다시 부하 테스트를 해보겠습니다.  
 Vuser 20일때 대략 TPS가 800이 나왔으니 이번에는 2배 이상을 기대해보겠습니다.  
   
 5분간 부하를 넣어보면!  
@@ -114,6 +114,7 @@ Pinpoint 그래프를 보면 더더욱 이상한 모양이 나옵니다.
 (응답이 빠른 구간)  
   
 응답이 느릴때는 항상 ```getConnection()```에서 오래 걸린다는 것이 발견되었습니다!  
+이 부분을 한번 해결해보겠습니다.
 
 ### 1-3. Datasource Connection Pool 설정하기
 
@@ -169,7 +170,7 @@ RDS는 별다른 설정이 없다면 RDS 사양에 따라 다음과 같은 max_c
 
 ([출처](http://tritoneco.com/2015/11/23/max_connections-at-aws-rds-mysql-instance-sizes/))
 
-서버가 여러대라 RDS max_connection 값이 초과하지 않도록 주의해주셔야 합니다.  
+서버가 여러대라면 **RDS max_connection 값이 초과하지 않도록 주의**해주셔야 합니다.  
 
 > RDS 파라미터 그룹을 통해서 저 수치를 증가시킬수 있으니 참고하세요!
 
@@ -190,26 +191,41 @@ HikariCP에서는 이 값을 설정하지 않을 경우 **maximum-pool-size와 �
 
 ![rds1](./images/1/rds1.png)
 
-배포하자마자 RDS의 활성화된 Connection 수가 50으로 바로 증가한걸 보면 maximum-pool-size 값이 minimum-idle에 똑같이 적용되었다는 것을 알 수 있죠?  
+배포하자마자 RDS의 활성화된 Connection 수가 50으로 바로 증가한걸 보면 **maximum-pool-size 값이 minimum-idle에 똑같이 적용**되었다는 것을 알 수 있죠?  
   
 
 자 그럼 다시 한번 테스트를 해보겠습니다.  
-Pinpoint에 더이상 주기적으로 튀는 것은 없어졌지만!  
-**테스트 초반에 응답 속도가 확 튀는 것**이 보입니다.
+바로 Vuser 50으로 하지 않고 30으로 해서 순차적으로 진행해보겠습니다.
+
+![ngrinder2-2](./images/1/ngrinder2-2.png)
+
+Vuser가 20일때와 비교해서 1.5배 (30)으로 늘어났지만, **평균 TPS가 전혀 오르지 않았습니다**.  
+
+다행히! Pinpoint를 보면 이전처럼 더이상 **주기적으로 튀는 현상이 사라졌습니다**!
 
 ![pinpoint2-4](./images/1/pinpoint2-4.png)
 
-RDS의 CPU는 25% 까지만 올라갔기 때문에 아직 여유가 있습니다.
+자 그럼 여기서 한가지 의문입니다.  
+TPS가 왜 계속 800대인지 궁금합니다.  
+하드웨어 사양의 한계인지 한번 확인해보겠습니다.  
+**RDS의 CPU는 25%** 까지만 올라갔기 때문에 아직 여유가 있습니다.
 
 ![rds-cpu1](./images/1/rds-cpu1.png)
 
-하지만! Beanstalk의 **EC2 CPU를 보면 100%** 까지 올라갔습니다!
+Beanstalk의 **EC2 CPU는 50%** 까지 올라갔습니다
 
 ![ec2-cpu1](./images/1/ec2-cpu1.png)
 
-더 중요한건 **TPS가 증가하지 않았습니다!**
+RDS도 EC2도 자원이 아직 여유롭습니다.  
+이렇게 자원이 남을때는, 서버의 자원을 좀 더 사용할 수 있도록 Tomcat Thread 수를 조정하겠습니다
 
-![ngrinder2-2](./images/1/ngrinder2-2.png)
+### 1-4. Tomcat Thread 
+
+일반적으로 Tomcat Max Thread를 DBCP의 Max Connection 보다 조금 더 높게 설정합니다.  
+Tomcat으로 오는 모든 요청이 꼭 DB를 사용하지 않기 때문인데요.  
+여기 테스트에서는 테스트 하는 모든 요청이 DB를 사용하기 때문에 같은 양으로 맞춥니다.  
+
+
 
 또 뭔가 문제가 있어보입니다.  
 RDS의 CPU에는 여유가 있지만, EC2의 CPU가 따라가지 못하고 있습니다.  
