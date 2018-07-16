@@ -162,9 +162,18 @@ spring:
       driver-class-name: org.mariadb.jdbc.Driver
 ```
 
-> 주의하실 점은 톰캣 서버가 1대가 아닌 여러대일 경우 **서버들의 maximum-pool-size의 합이 RDS의 max connection 수를 초과**하면 안됩니다.  
+주의하실 점은 톰캣 서버가 1대가 아닌 여러대일 경우 **서버들의 maximum-pool-size의 합이 RDS의 max connection 수를 초과**하면 안됩니다.  
+RDS는 별다른 설정이 없다면 RDS 사양에 따라 다음과 같은 max_connection값을 가집니다.
 
-여기서 추가로 궁금한것이 **minimum-idle 수치는 조정하지 않아도 되는건가?** 입니다.
+![rds-connection-count](./images/1/rds-connection-count.png)
+
+([출처](http://tritoneco.com/2015/11/23/max_connections-at-aws-rds-mysql-instance-sizes/))
+
+서버가 여러대라 RDS max_connection 값이 초과하지 않도록 주의해주셔야 합니다.  
+
+> RDS 파라미터 그룹을 통해서 저 수치를 증가시킬수 있으니 참고하세요!
+
+추가로 궁금한것이 **minimum-idle 수치는 조정하지 않아도 되는건가?** 입니다.
 
 **minimum-idle**
 

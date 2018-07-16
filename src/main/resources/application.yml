@@ -43,3 +43,6 @@ spring:
     hikari:
       maximum-pool-size: 50
       driver-class-name: org.mariadb.jdbc.Driver
+server:
+  tomcat:
+    max-threads: 50
