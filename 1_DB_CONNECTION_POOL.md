@@ -222,8 +222,8 @@ RDS도 EC2도 자원이 아직 여유롭습니다.
 ### 1-4. Tomcat Thread 
 
 일반적으로 Tomcat Max Thread를 DBCP의 Max Connection 보다 조금 더 높게 설정합니다.  
-Tomcat으로 오는 모든 요청이 꼭 DB를 사용하지 않기 때문인데요.  
-여기 테스트에서는 테스트 하는 모든 요청이 DB를 사용하기 때문에 같은 양으로 맞춥니다.  
+**Tomcat으로 오는 모든 요청이 꼭 DB를 사용하지 않기 때문**인데요.  
+예를 들어 여기 테스트만 하더라도 Beanstalk이 EC2가 살아있는지 체크하는 Health Check Request는 DB를 사용하지 않습니다.
 
 
 
