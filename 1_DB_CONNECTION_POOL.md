@@ -11,7 +11,8 @@
 테스트 환경은 아래와 같습니다.
 
 * AWS Elastic Beanstalk
-    * **t2.medium 1대**
+    * **c5.large 1대**
+    * t2.large 보다 저렴합니다.
 * AWS Aurora RDS
     * AWS와 같은 클라우드 환경에 최적화
     * **r4.large**
@@ -223,7 +224,10 @@ RDS도 EC2도 자원이 아직 여유롭습니다.
 
 일반적으로 Tomcat Max Thread를 DBCP의 Max Connection 보다 조금 더 높게 설정합니다.  
 **Tomcat으로 오는 모든 요청이 꼭 DB를 사용하지 않기 때문**인데요.  
-예를 들어 여기 테스트만 하더라도 Beanstalk이 EC2가 살아있는지 체크하는 Health Check Request는 DB를 사용하지 않습니다.
+예를 들어 여기 테스트만 하더라도 Beanstalk이 EC2가 살아있는지 체크하는 Health Check Request는 DB를 사용하지 않습니다.  
+무난하게 DB Max Connection 보다 10 증가한 60으로 Tomcat Max Threads를 설정합니다.
+
+
 
 
 

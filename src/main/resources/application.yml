@@ -42,4 +42,4 @@ spring:
       driver-class-name: org.mariadb.jdbc.Driver
 server:
   tomcat:
-    max-threads: 100
+    max-threads: 200
