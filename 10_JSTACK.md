@@ -30,7 +30,8 @@ while [ $count -gt 0 ]
 do
         FILE_NAME=jstack.$pid.$(date +%H%M%S.%N)
         echo "[Current][Active][Thread]: " > ${FILE_NAME}
-        ps -eLf | grep java | wc -l >> ${FILE_NAME}
+        CURRENT_THREAD=$(ps -eLf | grep java | wc -l)
+        sed -i sed 's/:/: ${CURRENT_THREAD}/' ${FILE_NAME}
         jstack $pid >> ${FILE_NAME}
         sleep $delay
         let count--
