@@ -37,8 +37,6 @@ netstat -napo | grep -i time_wait
 ![timeout2](./images/2/timeout2.png)
 
 8080 포트가 목적지인 timeout 소켓들이 보이네요??  
-
-> 좌측의 127.0.0
 실제로 몇개나 되는지 한번 확인해보겠습니다.
 
 ```bash
