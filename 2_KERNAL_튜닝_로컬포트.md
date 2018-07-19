@@ -180,6 +180,8 @@ Beanstalk 환경에선 언제든지 오토 스케일링으로 새로운 서버�
   
 그럼 위에서 진행한 설정을 언제든지 Beanstalk 환경이 재시작해도 적용될 수 있도록 작업해보겠습니다.  
 
+### 2-3-1. 커널파라미터 초기화
+
 먼저 Beanstalk의 환경을 재빌드 해서 커널파라미터 수정한것을 초기화합니다.
 
 ![재빌드1](./images/2/재빌드1.png)
@@ -192,17 +194,54 @@ Beanstalk 환경에선 언제든지 오토 스케일링으로 새로운 서버�
 
 2-2에서 설정했던 튜닝 설정이 다 초기화 된 것을 알 수 있습니다.
 
-프로젝트 폴더 아래에 ```.ebextension``` 디렉토리를 생성합니다.  
+```bash
+sysctl -a | grep "net.ipv4.tcp_tw_reuse"
+```
+
+### 2-3-2. Beanstalk Config 파일 생성
+
+프로젝트 폴더 아래에 ```.ebextensions``` 디렉토리를 생성합니다.  
 그리고 그 아래에 ```00-system-tuning.config``` 파일을 생성합니다.
 
+![config설정](./images/2/config설정.png)
 
+그리고 아래 코드를 그대로 복사해서 넣습니다.
 
-자 그럼 잘 적용되었는지 한번 확인해보겠습니다
+```
+commands:
+  01:
+    command: "echo \"10240 65535\" > /proc/sys/net/ipv4/ip_local_port_range"
+  02:
+    command: "sysctl -w \"net.ipv4.tcp_timestamps=1\""
+  03:
+    command: "sysctl -w \"net.ipv4.tcp_tw_reuse=1\""
+```
+
+> .ebextensions에 대한 좀 더 상세한 설명은 [우아한형제들 기술 블로그 - Elastic Beanstalk Configuration files](http://woowabros.github.io/woowabros/2017/08/07/ebextension.html)를 참고해보세요!
+
+위에서 적용했던 커널파라미터 수정을 모두 ```00-system-tuning.config```에 추가하였습니다.  
+이제 Beanstalk이 배포될때마다 해당 설정을 적용할 것입니다!  
+
+자 그럼 잘 적용되었는지 한번 확인해보겠습니다.  
+다시 배포를 해보시고, 해당 EC2에 접속합니다.  
+설정값을 확인해보시면!
 
 ```bash
 sysctl -a | grep "net.ipv4.tcp_tw_reuse"
-sysctl -a | grep "net.ipv4.tcp_timestamps"
 ```
+
+![재빌드4](./images/2/재빌드4.png)
+
+별다른 설정없이 **배포만 했는데도 커널파라미터가 튜닝**되었습니다!  
+  
+이제 커널 파라미터 설정에 대한 걱정없이 배포만 하시면 항상 최상의 튜닝 상태가 유지될 것입니다.  
+  
+이번 시간에는 리눅스 관련된 내용이 많아서 어려우실수도 있습니다.  
+하지만 백엔드 엔지니어로 가실려면 꼭 알고 가셔야하기 때문에 이해가 안되시면 다른 자료를 꼭 참고해서라도 이해하시길 추천드립니다 :)  
+  
+그럼 다음 챕터에서 뵙겠습니다.  
+감사합니다!
+
 
 ## 참고
 
