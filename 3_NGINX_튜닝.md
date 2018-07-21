@@ -1,47 +1,10 @@
-# RDS 튜닝
+# 3. Nginx 튜닝
 
-Beanstalk의 기본 ```nginx.confg```
 
-```yaml
-user                    nginx;
-error_log               /var/log/nginx/error.log warn;
-pid                     /var/run/nginx.pid;
-worker_processes        auto;
-worker_rlimit_nofile    133649;
+## 3-1. 여전히 많은 TIME_WAIT
 
-events {
-    worker_connections  1024;
-}
 
-http {
-    include       /etc/nginx/mime.types;
-    default_type  application/octet-stream;
+## 3-2. Nginx와 SpringBoot keepalive 설정
 
-    log_format  main  '$remote_addr - $remote_user [$time_local] "$request" '
-                      '$status $body_bytes_sent "$http_referer" '
-                      '"$http_user_agent" "$http_x_forwarded_for"';
+## 3-3. worker_connections 문제
 
-    include       conf.d/*.conf;
-
-    map $http_upgrade $connection_upgrade {
-        default     "upgrade";
-    }
-
-    server {
-        listen        80 default_server;
-        access_log    /var/log/nginx/access.log main;
-
-        client_header_timeout 60;
-        client_body_timeout   60;
-        keepalive_timeout     60;
-        gzip                  off;
-        gzip_comp_level       4;
-        gzip_types text/plain text/css application/json application/javascript application/x-javascript text/xml application/xml application/xml+rss text/javascript;
-
-        # Include the Elastic Beanstalk generated locations
-        include conf.d/elasticbeanstalk/*.conf;
-    }
-}
-```
-
-## Nginx와 SpringBoot keepalive 설정
