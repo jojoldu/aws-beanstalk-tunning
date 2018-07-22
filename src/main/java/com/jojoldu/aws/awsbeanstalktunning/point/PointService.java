@@ -16,7 +16,6 @@ public class PointService {
 
     private final PointRepository pointRepository;
 
-    @Transactional(readOnly = true)
     public Long getAvailablePoint(Long userId){
         return pointRepository.getAvailablePoint(userId);
     }
