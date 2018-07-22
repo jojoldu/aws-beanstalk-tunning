@@ -38,8 +38,8 @@ spring:
   profiles: real
   datasource:
     hikari:
-      maximum-pool-size: 50
+      maximum-pool-size: 200
       driver-class-name: org.mariadb.jdbc.Driver
 server:
   tomcat:
-    max-threads: 200
+    max-threads: 300

@@ -1,17 +1,34 @@
 # 3. Nginx 튜닝
 
+[지난 시간](http://jojoldu.tistory.com/319)에 보셨던것처럼 **AWS Elastic Beanstalk은 기본적으로 Nginx을 갖고 있습니다**.  
+이 내용을 모르시는 분들 입장에선 성능 튜닝시 Nginx 부분은 놓치실 수 있는데요.  
+그래서 이번 시간에는 Nginx와 Spring Boot 간의 성능 튜닝 과정을 진행해보겠습니다.
 
 ## 3-1. upstream keepalive
 
-### 3-1-1. 여전히 많은 time_wait 소켓
+지난 시간에 ```net.ipv4.tcp_tw_reuse``` 값을 수정하여 로컬 포트 고갈 문제를 해결하였습니다!  
+그리고 수정된 버전으로 다시 한번 성능 테스트를 진행했는데요.  
+  
+성능 테스트 중, timewait 소켓을 체크해봤습니다.  
+그랬더니!
 
-### 3-1-2. Nginx와 Spring Boot간의 keepalive 설정
+![timewait1](./images/3/timewait1.png)
+
+대략 3만개의 timewait 소켓이 생성되어 유지중이였습니다.  
+
+![timewait2](./images/3/timewait2.png)
+
+### 여전히 많은 time_wait 소켓
+
+## 3-2. Nginx와 Spring Boot간의 keepalive 설정
+
+## 3-3. AWS Beanstalk의 Nginx 설정하기 
 
 ![ngrinder1](./images/3/ngrinder1.png)
 
 ![ngrinder2](./images/3/ngrinder2.png)
 
-## 3-2. epoll
+## 3-4. epoll
 
 
 ```
@@ -50,7 +67,12 @@ select와 Poll 이외의 또 다른 방법은 epoll 이 여기에서 구하려�
 
 
 ```
-## 3-3. worker_connections
+
+## 3-5. worker_connections
+
+```bash
+top -p `pgrep "java"`
+```
 
 ## 참고
 
