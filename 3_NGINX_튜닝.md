@@ -12,13 +12,24 @@
 ![ngrinder1](./images/3/ngrinder1.png)
 
 Vuser 50으로 맞추고 테스트를 하니 TPS가 4700까지 올라갔습니다!  
-한번더 성능 테스트를 하던 중 timewait 소켓을 체크해봤더니! 
+중간에 DB Connection이 부족한것이 발견되어 DB Connection Pool Size와 Tomcat Thread를 조정 후 다시 성능테스트를 진행하겠습니다.  
+이번엔 Vuser 100으로 맞추었습니다.
+
+
+
+한번더 성능 테스트를 하던 중 TIME_WAIT 소켓을 체크해봤더니! 
 
 ![timewait1](./images/3/timewait1.png)
 
-대략 **3만개의 timewait 소켓이 생성되어 유지중** 이였습니다.  
+대략 **3만개의 TIME_WAIT 소켓이 생성되어 유지중** 이였습니다.  
+여전히 너무 많은 TIME_WAIT 소켓이 생성되고 있습니다.  
 
-### 3-1-1. upstream keepalive 소개
+지난 시간에 TIME_WAIT 소켓을 재사용함으로써 로컬 포트 고갈 문제는 해결되었지만, 여전히 근본적인 문제가 남아있었습니다.  
+**애초에 TIME_WAIT 소켓이 쌓이지 않도록** 근본적인 문제를 해결해보겠습니다.
+
+### 3-1-1. TIME_WAIT
+
+### 3-1-2. upstream keepalive 소개
 
 ## 3-2. Nginx와 Spring Boot간의 keepalive 설정
 
@@ -36,7 +47,7 @@ AWS Beanstalk에서 Nginx의 nginx.conf 파일을 수정하는 방법은 간단�
 
 ![ngrinder2](./images/3/ngrinder2.png)
 
-![timewait2](./images/3/timewait2.png)
+![TIME_WAIT2](./images/3/TIME_WAIT2.png)
 
 
 ## 3-4. epoll
