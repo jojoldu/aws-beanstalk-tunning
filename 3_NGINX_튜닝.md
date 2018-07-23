@@ -4,7 +4,7 @@
 이 내용을 모르시는 분들 입장에선 성능 튜닝시 Nginx 부분은 놓치실 수 있는데요.  
 그래서 이번 시간에는 Nginx와 Spring Boot 간의 성능 튜닝 과정을 진행해보겠습니다.
 
-> 모든 코드는 [Github]()에 있습니다.
+> 모든 코드는 [Github](https://github.com/jojoldu/aws-beanstalk-tunning)에 있습니다.
 
 ## 3-1. 여전히 많은 TIME_WAIT 소켓
 
