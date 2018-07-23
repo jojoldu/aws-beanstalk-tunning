@@ -1,0 +1,7 @@
+[
+  {
+    "Namespace": "aws:elasticbeanstalk:sns:topics",
+    "OptionName": "Notification Topic ARN",
+    "Value": "arn:aws:sns:ap-northeast-2:603921118307:dwlee-code-deploy-notify-sns"
+  }
+]
